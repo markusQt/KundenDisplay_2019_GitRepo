@@ -1,0 +1,2 @@
+# KundenDisplay_2019_GitRepo
+Kundendisplay mit Multimediafunktion
