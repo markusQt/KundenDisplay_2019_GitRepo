@@ -35,7 +35,7 @@ def setKassenzeile():
 			globals()["kasseninfo"] = globals()["kasseninfo"][0:30]
 			globals()["kasseninfo"] = globals()["kasseninfo"]+"..."
 		cv2.line(frame,(12,100), (250,100), (255,0,0),15) 
-		cv2.putText(frame,globals()["kasseninfo"],(10,500), font, 2,(0,0,0),2,cv2.LINE_AA)
+		cv2.putText(frame,globals()["kasseninfo"],(10,500), font, 2,(0,0,0),2)
 
 def getAllMedia():
 	globals()["mediaPfad"] = os.getcwd()+"/assets/"
