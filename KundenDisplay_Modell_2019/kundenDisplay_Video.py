@@ -22,6 +22,7 @@ showKassenzeile = False
 artikelbezeichnung=''
 menge=''
 einzelbetrag=''
+total=''
 listeBilder=[]
 listeFilme=[]
 t=''
@@ -65,14 +66,26 @@ def setKassenzeile():
 			globals()["artikelbezeichnung"] = globals()["artikelbezeichnung"][0:30]
 			globals()["artikelbezeichnung"] = globals()["artikelbezeichnung"]+"..."
 		# Rechteck (links oben, rechts unten, Farbe,  Strichstärke)
-		cv2.rectangle(frame,(0,435), (810,530), (0,0,0),-1) 
-		cv2.putText(frame,"Artikel",(5,460), font, 0.5,(255,255,255),1)
-		cv2.putText(frame,"Menge",(450,460), font, 0.5,(255,255,255),1)
-		cv2.putText(frame,"Betrag",(650,460), font, 0.5,(255,255,255),1)
-		cv2.line(frame,(0,470),(810,470),(255,255,255),1)
-		cv2.putText(frame,globals()["artikelbezeichnung"],(5,500), font, 0.7,(255,255,255),1)
-		cv2.putText(frame,globals()["menge"],(450,500), font, 0.7,(255,255,255),1)
-		cv2.putText(frame,globals()["einzelbetrag"] + "  CHF",(650,500), font, 0.7,(255,255,255),1)
+		cv2.rectangle(frame,(0,410), (810,530), (0,0,0),-1) 
+		#Labels:
+		cv2.putText(frame,"Artikel",(5,430), font, 0.5,(255,255,255),1)
+		cv2.putText(frame,"Menge",(450,430), font, 0.5,(255,255,255),1)
+		cv2.putText(frame,"Betrag",(600,430), font, 0.5,(255,255,255),1)
+		cv2.putText(frame,"Total Bar",(450,510), font, 0.5,(255,255,255),1)
+		#Trennlinie:
+		cv2.line(frame,(0,445),(810,445),(255,255,255),1)
+		#Artikel:
+		cv2.putText(frame,globals()["artikelbezeichnung"],(5,475), font, 0.7,(255,255,255),1)
+		#Menge:
+		cv2.putText(frame,globals()["menge"],(450,475), font, 0.7,(255,255,255),1)
+		#Betrag * Menge:
+		betrag = float(globals()["einzelbetrag"])*float(globals()["menge"])
+		cv2.putText(frame,"{:,.2f}".format(float(betrag)) + "  CHF ",(600,475), font, 0.8,(255,255,255),1)
+		#Trennlinie Total:
+		cv2.line(frame,(430,485),(810,485),(255,255,255),1)
+		#Total:
+		cv2.putText(frame,"{:,.2f}".format(float(globals()["total"])) + "  CHF",(600,510), font,0.8,(0,227,0),1)
+		
 
 def getAllMedia():
 	globals()["mediaPfad"] = os.getcwd()+"/assets/"
@@ -113,6 +126,7 @@ def dataTransfer(conn):
 						globals()["artikelbezeichnung"]=  dataMessage[1]
 						globals()["menge"]=  dataMessage[3]
 						globals()["einzelbetrag"]=  dataMessage[2]
+						globals()["total"]= dataMessage[4]
 						globals()["showKassenzeile"]=True       
 					finally:
 						print("Break")			
