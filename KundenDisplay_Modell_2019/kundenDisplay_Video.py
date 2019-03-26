@@ -14,28 +14,65 @@ import numpy
 
 #Vars:
 host= ''	
-myMainGui=''
 mediaPfad=''
-mWindow=''
-kasseWindow=''
+mWindow='Apotheke'
+cap=''
+delay=''
 showKassenzeile = False
-kasseninfo=''
+artikelbezeichnung=''
+menge=''
+einzelbetrag=''
 listeBilder=[]
 listeFilme=[]
 t=''
-port=9999
-appExit = False
+windowHeight=500
+windowWidth=820
 
+appExit = False
+mySocket=''
+
+
+#cv2.resizeWindow("Apotheke",windowWidth,windowHeight)
+
+
+
+
+def getConfigs():
+	global host
+	global port
+	global delay
+	configFile = open("config.txt","r")
+	for line in configFile:
+		if line.split("=")[0] == "host":
+			host = line.split("=")[1]
+		if line.split("=")[0] == "port":
+			port = int(line.split("=")[1])
+			print ("Port:" ,port)
+		if line.split("=")[0] == "delay":
+			delay = int(line.split("=")[1])
+		print (line)
+
+def cleanExit():
+	global appExit
+	print ("EXIT-EXIT-EXIT")	
+	appExit = True
 
 def setKassenzeile():
 	
 	if globals()["showKassenzeile"]:
 		font=cv2.FONT_HERSHEY_SIMPLEX
-		if len(globals()["kasseninfo"]) > 35:
-			globals()["kasseninfo"] = globals()["kasseninfo"][0:30]
-			globals()["kasseninfo"] = globals()["kasseninfo"]+"..."
-		cv2.line(frame,(12,100), (250,100), (255,0,0),15) 
-		cv2.putText(frame,globals()["kasseninfo"],(10,500), font, 2,(0,0,0),2)
+		if len(globals()["artikelbezeichnung"]) > 35:
+			globals()["artikelbezeichnung"] = globals()["artikelbezeichnung"][0:30]
+			globals()["artikelbezeichnung"] = globals()["artikelbezeichnung"]+"..."
+		# Rechteck (links oben, rechts unten, Farbe,  Strichstärke)
+		cv2.rectangle(frame,(0,435), (810,530), (0,0,0),-1) 
+		cv2.putText(frame,"Artikel",(5,460), font, 0.5,(255,255,255),1)
+		cv2.putText(frame,"Menge",(450,460), font, 0.5,(255,255,255),1)
+		cv2.putText(frame,"Betrag",(650,460), font, 0.5,(255,255,255),1)
+		cv2.line(frame,(0,470),(810,470),(255,255,255),1)
+		cv2.putText(frame,globals()["artikelbezeichnung"],(5,500), font, 0.7,(255,255,255),1)
+		cv2.putText(frame,globals()["menge"],(450,500), font, 0.7,(255,255,255),1)
+		cv2.putText(frame,globals()["einzelbetrag"] + "  CHF",(650,500), font, 0.7,(255,255,255),1)
 
 def getAllMedia():
 	globals()["mediaPfad"] = os.getcwd()+"/assets/"
@@ -73,7 +110,9 @@ def dataTransfer(conn):
 					print(dataMessage[1])
 					try:						
 						print(dataMessage[1])
-						globals()["kasseninfo"]=  dataMessage[1]
+						globals()["artikelbezeichnung"]=  dataMessage[1]
+						globals()["menge"]=  dataMessage[3]
+						globals()["einzelbetrag"]=  dataMessage[2]
 						globals()["showKassenzeile"]=True       
 					finally:
 						print("Break")			
@@ -104,91 +143,86 @@ def dataTransfer(conn):
 
 def startServerThread():
 	global appExit
+	global host
+	socketServer = globals()["mySocket"]
 	print("Starte Server thread")
-	global mySocket
-	mySocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+	
+	socketServer = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 	print("Socket Created")
 	try:
-		mySocket.bind((host,port))
+		socketServer.bind((host,port))
 	except socket.error as e:			
+		print ("Mein Socketerror: " , str(e))
 		if e.errno==98:
-			#print(str(e))
-			mySocket.close()					
+			print(str(e))
+			socketServer.close()					
 	print("socket bind complete")
-	mySocket.listen(100) #eine Verbindung
+	socketServer.listen(100) #eine Verbindung
 	while (not appExit):
 		print("listen")
-		conn, addr = mySocket.accept()
+		conn, addr = socketServer.accept()
 		print("connected to :"+addr[0]+":"+str(addr[1]))	
 		dataTransfer(conn)
-	mySocket.close()
+	socketServer.close()
 	print ("Server beendet")
 		
 def playVideo(pfadMedia, filepath):    
     global cap
     global appExit
+    global mWindow    
     pfadFilm = pfadMedia+filepath
+    cv2.namedWindow(mWindow,flags=cv2.WINDOW_AUTOSIZE)
+    cv2.moveWindow(mWindow,-5,-80)
     cap = cv2.VideoCapture(pfadFilm)
     isRunning = True 
     while isRunning : 
         global frame  
-        ret, frame = cap.read()
-        isRunning = ret
+        if not appExit:
+            ret, frame = cap.read()
+            isRunning = ret
+        else:
+            isRunning=False
         if ret :
-            if(globals()["showKassenzeile"]): 
+            if(globals()["showKassenzeile"]) : 
                   setKassenzeile()                   
             cv2.imshow(mWindow, frame)             
-        if cv2.waitKey(25) & 0xFF == ord('q') or appExit == True:
+        if cv2.waitKey(25) & 0xFF == ord('q') :
             isRunning = False
-            appExit = True
-            break
-        #cv2.waitKey(25) & 0xFF   
-    print ("cap release")
+            appExit = True           
+        print ("cap release")
     cap.release() 
-    cv2.destroyWindow(mWindow)
+    #cv2.destroyAllWindows()
     print ("Window destroyd")
      
     
 def playImage(pfadMedia, filepath):
 	global frame
 	global appExit
+	global mWindow
+	global delay;
 	if not appExit:
 		pfadBild = pfadMedia+filepath
 		print("Zeige : " ,pfadBild)
-		
-		millisStart = 0
 		millisEnd = 0
-		delayInMilSecs = 3000;
-		millisSecStart=0
-		timespan = 0
-		while delayInMilSecs >  timespan:
+		cv2.namedWindow(mWindow,flags=cv2.WINDOW_AUTOSIZE)
+		cv2.moveWindow(mWindow,-5,-80)
+		while delay * 200 >  millisEnd and not appExit:
 			frame = cv2.imread(pfadBild,1) 
-			millisStart  =  int(round(time.time() * 1000))
+			#millisStart  =  int(round(time.time()))
 			if(globals()["showKassenzeile"]): 
 				setKassenzeile()
 				cv2.imshow(mWindow, frame)
 			else:     
-				cv2.imshow(mWindow, frame)
-			millisEnd =  int(round(time.time() * 1000))
-			timespan += millisEnd - millisStart
-			print ("Timespan jetzt :" , timespan)
-			if cv2.waitKey(1) & 0xFF == ord('q') or appExit == True:
+				cv2.imshow(mWindow, frame)			
+			if cv2.waitKey(1) & 0xFF == ord('q') :
 				isRunning = False
 				appExit = True
-				break
-	cap.release() 
-	cv2.destroyWindow(mWindow)
+			millisEnd +=1  #int(round(time.time()))
+			print ("Timespan jetzt :" , millisEnd)
+			#timespan += millisEnd - millisStart 
+		#cv2.destroyAllWindows()
 
-def doSlide():
-	global root
-	print("picture")	
-	for x in range (len(listeBilder)):
-		print(mediaPfad+listeBilder[x])
-		photo1 = tk.PhotoImage(file=mediaPfad+listeBilder[x])
-		print(type(root))
-		picture = tk.Label(root,image = photo1)
-		picture.pack()
-		time.sleep(2)
+
 
 
 def doMultimedia():
@@ -196,6 +230,7 @@ def doMultimedia():
 	for i in range (len(listeFilme)):
 		if (not appExit):
 			playVideo(mediaPfad, str(listeFilme[i]))
+			pass
 		else:
 			print("Filme beendet")
 			print("Appexit : " ,appExit)
@@ -208,29 +243,36 @@ def doMultimedia():
 			print("Appexit : " ,appExit)
 			break
 
-def cleanExit():
-	global appExit
-	
+def closeSocket():	
+	global host
+	global port
 	try:
-		appExit = True 
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((host,port))
+		s.sendall(str.encode("Exit|0815"))
+		s.close()
 	except:
-		print ("Keine Fenster zu schliessen")	
-	finally:
-		quit()
+		pass
+
+
 
 
 def main():
 	global appExit
+	getConfigs()
 	getAllMedia()
 	#eigenen Thread erstellen target -> funktion die Aufgerufen werden soll, name -> thread wird benannt(idFlag)	
 	myThread = threading.Thread(target = startServerThread, name = "ServerThread" )
 	myThread.start()
 	while not appExit:
 		doMultimedia()
-		#doSlideshow()
-	print("Appexit zurueck in while : " ,appExit)
-	if appExit:
-		quit()
+	print("AppExit: " ,appExit)
+	print ("closeSocket")
+	cv2.destroyAllWindows();
+	closeSocket()
 
-if (__name__ == '__main__'):
-	main()
+
+
+main()
+
+sys.exit()
