@@ -66,25 +66,25 @@ def setKassenzeile():
 			globals()["artikelbezeichnung"] = globals()["artikelbezeichnung"][0:30]
 			globals()["artikelbezeichnung"] = globals()["artikelbezeichnung"]+"..."
 		# Rechteck (links oben, rechts unten, Farbe,  Strichstärke)
-		cv2.rectangle(frame,(0,410), (810,530), (0,0,0),-1) 
+		cv2.rectangle(frame,(0,380), (810,500), (0,0,0),-1) 
 		#Labels:
-		cv2.putText(frame,"Artikel",(5,430), font, 0.5,(255,255,255),1)
-		cv2.putText(frame,"Menge",(450,430), font, 0.5,(255,255,255),1)
-		cv2.putText(frame,"Betrag",(600,430), font, 0.5,(255,255,255),1)
-		cv2.putText(frame,"Total Bar",(450,510), font, 0.5,(255,255,255),1)
+		cv2.putText(frame,"Artikel",(5,400), font, 0.5,(255,255,255),1)
+		cv2.putText(frame,"Menge",(450,400), font, 0.5,(255,255,255),1)
+		cv2.putText(frame,"Betrag",(600,400), font, 0.5,(255,255,255),1)
+		cv2.putText(frame,"Total Bar",(450,480), font, 0.5,(255,255,255),1)
 		#Trennlinie:
-		cv2.line(frame,(0,445),(810,445),(255,255,255),1)
+		cv2.line(frame,(0,415),(810,415),(255,255,255),1)
 		#Artikel:
-		cv2.putText(frame,globals()["artikelbezeichnung"],(5,475), font, 0.7,(255,255,255),1)
+		cv2.putText(frame,globals()["artikelbezeichnung"],(5,445), font, 0.7,(255,255,255),1)
 		#Menge:
-		cv2.putText(frame,globals()["menge"],(450,475), font, 0.7,(255,255,255),1)
+		cv2.putText(frame,globals()["menge"],(450,445), font, 0.7,(255,255,255),1)
 		#Betrag * Menge:
 		betrag = float(globals()["einzelbetrag"])*float(globals()["menge"])
-		cv2.putText(frame,"{:,.2f}".format(float(betrag)) + "  CHF ",(600,475), font, 0.8,(255,255,255),1)
+		cv2.putText(frame,"{:,.2f}".format(float(betrag)) + "  CHF ",(600,445), font, 0.8,(255,255,255),1)
 		#Trennlinie Total:
-		cv2.line(frame,(430,485),(810,485),(255,255,255),1)
+		cv2.line(frame,(430,455),(810,455),(255,255,255),1)
 		#Total:
-		cv2.putText(frame,"{:,.2f}".format(float(globals()["total"])) + "  CHF",(600,510), font,0.8,(0,227,0),1)
+		cv2.putText(frame,"{:,.2f}".format(float(globals()["total"])) + "  CHF",(600,480), font,0.8,(0,227,0),1)
 		
 
 def getAllMedia():
@@ -186,7 +186,7 @@ def playVideo(pfadMedia, filepath):
     global mWindow    
     pfadFilm = pfadMedia+filepath
     cv2.namedWindow(mWindow,flags=cv2.WINDOW_AUTOSIZE)
-    cv2.moveWindow(mWindow,-5,-80)
+    
     cap = cv2.VideoCapture(pfadFilm)
     isRunning = True 
     while isRunning : 
@@ -199,11 +199,15 @@ def playVideo(pfadMedia, filepath):
         if ret :
             if(globals()["showKassenzeile"]) : 
                   setKassenzeile()                   
-            cv2.imshow(mWindow, frame)             
+            cv2.imshow(mWindow, frame) 
+            cv2.moveWindow(mWindow,-5,-50) 
+        else: 
+            print("Bin fertig mit Film spielen")         
+            isRunning = False                      
         if cv2.waitKey(25) & 0xFF == ord('q') :
             isRunning = False
-            appExit = True           
-        print ("cap release")
+            appExit = True                    
+    print ("cap release")
     cap.release() 
     #cv2.destroyAllWindows()
     print ("Window destroyd")
@@ -219,15 +223,17 @@ def playImage(pfadMedia, filepath):
 		print("Zeige : " ,pfadBild)
 		millisEnd = 0
 		cv2.namedWindow(mWindow,flags=cv2.WINDOW_AUTOSIZE)
-		cv2.moveWindow(mWindow,-5,-80)
+		
 		while delay * 200 >  millisEnd and not appExit:
 			frame = cv2.imread(pfadBild,1) 
 			#millisStart  =  int(round(time.time()))
 			if(globals()["showKassenzeile"]): 
 				setKassenzeile()
 				cv2.imshow(mWindow, frame)
+				cv2.moveWindow(mWindow,-5,-50)
 			else:     
-				cv2.imshow(mWindow, frame)			
+				cv2.imshow(mWindow, frame)
+				cv2.moveWindow(mWindow,-5,-50)			
 			if cv2.waitKey(1) & 0xFF == ord('q') :
 				isRunning = False
 				appExit = True
@@ -244,7 +250,6 @@ def doMultimedia():
 	for i in range (len(listeFilme)):
 		if (not appExit):
 			playVideo(mediaPfad, str(listeFilme[i]))
-			pass
 		else:
 			print("Filme beendet")
 			print("Appexit : " ,appExit)
@@ -271,7 +276,7 @@ def closeSocket():
 
 
 
-def main():
+def startDisplay():
 	global appExit
 	getConfigs()
 	getAllMedia()
@@ -287,6 +292,5 @@ def main():
 
 
 
-main()
 
-sys.exit()
+

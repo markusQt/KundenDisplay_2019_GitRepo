@@ -1,3 +1,23 @@
+#=#################################################################################
+#= Dies ist das Configfile fuer die Funktionalitaet des Kundendisplays Modell 2019#
+#= Info: host : ist die vergebene IP-Adresse des Displays                         #
+#=       port : unter diesem Port ist das Kundendisplay erreichbar                #
+#=       delay: der Zeitintervall zur Anzeige der Bilder                          #
+#=       apotheke: Name der Apotheke                                              #
+#=       remotefile: Voller Pfad in welchem die zu kopierenden Medien liegen      #
+#=       ip_remote : unter dieser IP ist der Rechner mit den Medieninhalten       #
+#=                   die zu kopieren sind erreichbar                              #
+#=       destinationMedia: Pfad unter welchem die Medien am Display(Raspberry)    #
+#=                         abgelegt und abgerufen werden                          # 
+#=       user: Mit diesem User meldet sich das Display am Remotehost              #
+#=             zum Kopieren an                                                    #
+#=#################################################################################
+
+apotheke=Apotheke am Markt
 host=192.168.215.116 
 port=9999
 delay=3
+user=markuswi
+ip_remote=192.168.215.110
+remotefile=/home/markuswi/Kundendisplaybilder/
+destinationMedia=/home/markuswi/pySkripts/KundenDisplay_2019_GitRepo/KundenDisplay_Modell_2019/assets/
