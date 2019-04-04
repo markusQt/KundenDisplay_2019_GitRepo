@@ -10,14 +10,17 @@
 #=       destinationMedia: Pfad unter welchem die Medien am Display(Raspberry)    #
 #=                         abgelegt und abgerufen werden                          # 
 #=       user: Mit diesem User meldet sich das Display am Remotehost              #
-#=             zum Kopieren an                                                    #
+#=             zum Kopieren an                                                    # 
+#=       extMediamanager: hier findet das Programm den externenMediamanager       #
+#=                        dieser loescht die ungueltigen Files vor dem Kopieren   #
 #=#################################################################################
 
 apotheke=Apotheke am Markt
+extMediamanager=/home/apo/pgm/
 host=192.168.215.116 
 port=9999
 delay=3
 user=markuswi
 ip_remote=192.168.215.110
-remotefile=/home/markuswi/Kundendisplaybilder/
+remotefile=/home/pi/Kundendisplaybilder/
 destinationMedia=/home/markuswi/pySkripts/KundenDisplay_2019_GitRepo/KundenDisplay_Modell_2019/assets/

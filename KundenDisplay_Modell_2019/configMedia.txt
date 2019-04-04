@@ -1,0 +1,10 @@
+#=#################################################################################
+#= Dies ist das Configfile fuer die Funktionalitaet des Mediamanagers             #
+#= Info:                                                                          #
+#=       destinationMedia: Pfad unter welchem die Medien am Display(Raspberry)    #
+#=                         abgelegt und abgerufen werden                          # 
+#= Der externe Meidamanager kontrolliert und löscht abgelaufene Medien, ausserdem # 
+#= werden die Bilder und Filmdateien entsprechend konvertiert                     #
+#=#################################################################################
+
+sourceMedia=/home/pi/Kundendisplaybilder/

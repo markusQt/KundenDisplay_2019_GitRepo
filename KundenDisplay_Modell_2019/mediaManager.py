@@ -8,7 +8,7 @@ import subprocess
 import kundenDisplay_Video
 
 #Vars:
-size_810_x_520=(810,520)
+size_810_x_520=(820,530)
 breiteFilm=810
 hoeheFilm=530
 pfadZuMedia = ""
@@ -17,10 +17,36 @@ fehler = False
 localfile="*"
 remotehost=""
 remotefile=""
+externerMediamanager=""
 user=""
 host=""
 ipRemote=""
 port=""
+
+def cleanUpOldFiles():
+	global fehler
+	global localfile
+	global remotehost
+	global remotefile
+	global externerMediamanager
+	global ipRemote
+	global pfadZuMedia
+	global host
+	global user
+	remotefile += "*"
+	remotehost= user+"@"+ipRemote
+	print (remotehost)
+	print ("Remoteordner:" , externerMediamanager)
+	cmd ="ssh "+ remotehost+" python3 "+externerMediamanager+"externerMedienmanager.py del"
+	print (cmd)
+	try:
+		subprocess.check_output(cmd.split(" "))
+	except:
+		fehler = True
+		print ("#####################################################################")
+		print ("#  Beim Aufraeumen der alten Files ist ein Fehler aufgetreten       #")
+		print ("#####################################################################")
+		sys.exit()
 
 def leereMedienordner():
 	try:
@@ -46,11 +72,14 @@ def getConfigs():
 	global user
 	global ipRemote
 	global pfadZuMedia
+	global externerMediamanager
 	global host
 	global fehler
 	configFile = open("config.txt","r")
 	try:
 		for line in configFile:
+			if line.split("=")[0] == "extMediamanager":
+				externerMediamanager = line.split("=")[1].strip('\n').strip()
 			if line.split("=")[0] == "host":
 				host = line.split("=")[1].strip('\n').strip()
 			if line.split("=")[0] == "remotefile":
@@ -168,14 +197,21 @@ def main():
 		print ("Fehler bei Ausfuehrung getConfigs")
 		sys.exit()
 	print ("##############################################################")
-	print ("#  (2)Leere den Medienordner                                 #")
+	print ("#  (2)Delete files with expired date                         #")
+	print ("##############################################################")
+	cleanUpOldFiles()
+	if fehler:
+		print ("Fehler bei Aufraeumen Medienordner auf HostPc")
+		sys.exit()
+	print ("##############################################################")
+	print ("#  (3)Leere den Medienordner                                 #")
 	print ("##############################################################")
 	leereMedienordner()
 	if fehler:
 		print ("Fehler bei Ausfuehrung leereMedienordner")
 		sys.exit()
 	print ("##############################################################")
-	print ("#  (3)Starte kopieren der Medien                             #")
+	print ("#  (4)Starte kopieren der Medien                             #")
 	print ("##############################################################")
 	print ("##############################################################")
 	print ("#  Hinweis: Passwortloser Zugang muss per SSH bestehen       #")
@@ -184,21 +220,21 @@ def main():
 	if fehler:
 		print ("Fehler bei Ausfuehrung copyFiles")
 		sys.exit()
-	print ("##############################################################")
-	print ("#  Kopieren beendet                                          #")
-	print ("##############################################################")
+	#print ("##############################################################")
+	#print ("#  Kopieren beendet                                          #")
+	#print ("##############################################################")
 	#weil es immer Problemem mit Leerzeichen geben wird
-	renameFiles()
-	print ("##############################################################")
-	print ("#  (4)Aufbereiten der Medien wird gesartet                   #")
-	print ("##############################################################")
-	konvertiereMedien()
-	if fehler:
-		print ("Fehler bei Ausfuehrung konvertiereMedien")
-		sys.exit()
-	print ("##############################################################")
-	print ("# Aufbereiten der Medien beendet Kundendisplay wird gesartet #")
-	print ("##############################################################")
+	#renameFiles()
+	#print ("##############################################################")
+	#print ("#  (4)Aufbereiten der Medien wird gesartet                   #")
+	#print ("##############################################################")
+	#konvertiereMedien()
+	#if fehler:
+		#print ("Fehler bei Ausfuehrung konvertiereMedien")
+		#sys.exit()
+	print ("###############################################################")
+	print ("# Aufbereiten der Medien beendet Kundendisplay wird gestartet #")
+	print ("###############################################################")
 	kundenDisplay_Video.startDisplay()
 	sys.exit()
 	

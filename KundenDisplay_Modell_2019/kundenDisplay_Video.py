@@ -19,10 +19,13 @@ mWindow='Apotheke'
 cap=''
 delay=''
 showKassenzeile = False
+showKassenzeileTotal = False
 artikelbezeichnung=''
 menge=''
 einzelbetrag=''
 total=''
+gegeben=''
+zurueck=''
 listeBilder=[]
 listeFilme=[]
 t=''
@@ -60,8 +63,26 @@ def cleanExit():
 
 def setKassenzeile():
 	
-	if globals()["showKassenzeile"]:
+	if globals()["showKassenzeile"] and globals()["showKassenzeileTotal"]:
 		font=cv2.FONT_HERSHEY_SIMPLEX
+		print("Kassenzeile inkl Total")
+		# Rechteck (links oben, rechts unten, Farbe,  Strichstärke)
+		cv2.rectangle(frame,(0,380), (810,500), (0,0,0),-1) 
+		#Labels:		
+		cv2.putText(frame,"Total : ",(300,410), font, 1,(255,255,255),1)
+		cv2.putText(frame,"Gegeben :",(300,445), font, 1,(255,255,255),1)
+		#Trennlinie:
+		cv2.line(frame,(200,458),(810,458),(255,255,255),1)
+		cv2.putText(frame,"Zurueck :",(300,490), font, 1,(255,255,255),1)
+		#Total:
+		cv2.putText(frame,"{:,.2f}".format(float(globals()["total"]))+ "  CHF",(500,410), font, 1,(255,255,255),1)
+		#Gegeben:
+		cv2.putText(frame,"{:,.2f}".format(float(globals()["gegeben"])) + "  CHF ",(500,445), font, 1,(255,255,255),1)		
+		#Zurueck:
+		cv2.putText(frame,"{:,.2f}".format(float(globals()["zurueck"])) + "  CHF",(500,490), font,1,(0,204,0),1)
+	elif globals()["showKassenzeile"] :	
+		font=cv2.FONT_HERSHEY_SIMPLEX
+		print("Kassenzeile ohne Total")
 		if len(globals()["artikelbezeichnung"]) > 35:
 			globals()["artikelbezeichnung"] = globals()["artikelbezeichnung"][0:30]
 			globals()["artikelbezeichnung"] = globals()["artikelbezeichnung"]+"..."
@@ -85,7 +106,6 @@ def setKassenzeile():
 		cv2.line(frame,(430,455),(810,455),(255,255,255),1)
 		#Total:
 		cv2.putText(frame,"{:,.2f}".format(float(globals()["total"])) + "  CHF",(600,480), font,0.8,(0,227,0),1)
-		
 
 def getAllMedia():
 	globals()["mediaPfad"] = os.getcwd()+"/assets/"
@@ -121,20 +141,30 @@ def dataTransfer(conn):
 				elif command == 'GET':
 					print("GET")
 					print(dataMessage[1])
-					try:						
-						print(dataMessage[1])
-						globals()["artikelbezeichnung"]=  dataMessage[1]
-						globals()["menge"]=  dataMessage[3]
-						globals()["einzelbetrag"]=  dataMessage[2]
-						globals()["total"]= dataMessage[4]
-						globals()["showKassenzeile"]=True       
+					try:
+						if len(dataMessage)>4:
+							print(dataMessage[1])
+							globals()["artikelbezeichnung"]=  dataMessage[1]
+							globals()["menge"]=  dataMessage[3]
+							globals()["einzelbetrag"]=  dataMessage[2]
+							globals()["total"]= dataMessage[4]
+							globals()["showKassenzeileTotal"]=False
+							globals()["showKassenzeile"]=True  
+						else:
+							print("zeige Total")
+							globals()["total"]=dataMessage[1]
+							globals()["gegeben"]=dataMessage[2]
+							globals()["zurueck"]=dataMessage[3]
+							globals()["showKassenzeile"]=True 
+							globals()["showKassenzeileTotal"]=True
 					finally:
 						print("Break")			
-						break				
+						break									
 				elif command=='WERB':
 					print("WERB")
 					try:	
 						globals()["showKassenzeile"]=False
+						globals()["showKassenzeileTotal"]=False
 						setKassenzeile()  
 					finally:
 						break
@@ -200,7 +230,7 @@ def playVideo(pfadMedia, filepath):
             if(globals()["showKassenzeile"]) : 
                   setKassenzeile()                   
             cv2.imshow(mWindow, frame) 
-            cv2.moveWindow(mWindow,-5,-50) 
+            cv2.moveWindow(mWindow,-3,-50) 
         else: 
             print("Bin fertig mit Film spielen")         
             isRunning = False                      
@@ -230,10 +260,10 @@ def playImage(pfadMedia, filepath):
 			if(globals()["showKassenzeile"]): 
 				setKassenzeile()
 				cv2.imshow(mWindow, frame)
-				cv2.moveWindow(mWindow,-5,-50)
+				cv2.moveWindow(mWindow,-3,-50)
 			else:     
 				cv2.imshow(mWindow, frame)
-				cv2.moveWindow(mWindow,-5,-50)			
+				cv2.moveWindow(mWindow,-3,-50)			
 			if cv2.waitKey(1) & 0xFF == ord('q') :
 				isRunning = False
 				appExit = True
