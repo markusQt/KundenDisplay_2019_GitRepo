@@ -8,9 +8,11 @@ import subprocess
 import time
 import tkinter
 from  datetime  import datetime
+import cv2
+import numpy
 
 #Vars:
-size_810_x_520=(820,525)
+size_810_x_520=(800,510)
 breiteFilm=810
 hoeheFilm=530
 pfadZuMedia = ""
@@ -108,9 +110,15 @@ def konvertiereMedien():
 				mFilename, mFileextension = os.path.splitext(f)
 				if not mFilename[0:2] =="K_":
 					txtInfo.insert("end", "Konvertierung  von -> : " + mFilename + "\n")
+					txtInfo.insert("end", "Bitte warten ....\n")
+					txtInfo.see("end")
 					app.update()
-					tmpImage.thumbnail(size_810_x_520)
-					tmpImage.save(pfadZuMedia+"K_{}.png".format(mFilename))
+					#neue resize funktion:
+					img = cv2.imread(pfadZuMedia+f,cv2.IMREAD_UNCHANGED)
+					resizedImage = cv2.resize(img,size_810_x_520,interpolation = cv2.INTER_AREA)
+					cv2.imwrite(pfadZuMedia+"K_{}.png".format(mFilename),resizedImage)
+					#tmpImage.thumbnail((800,480))
+					#tmpImage.save(pfadZuMedia+"K_{}.png".format(mFilename))
 					# loeschen des Originals
 					os.remove(pfadZuMedia+f)
 				print (mFilename)
@@ -137,9 +145,12 @@ def konvertiereMedien():
 				if not mFilename[0:2]=="K_":
 					#print ("Film gefunden: " ,f.replace(" ",""))
 					txtInfo.insert("end", "Konvertierung  von -> : " + mFilename + "\n")
-					dateiDest = pfadZuMedia +"K_"+ mFilename.replace(" ","") + ".mp4"
-					txtInfo.insert("end",dateiDest)
+					txtInfo.insert("end", "Bitte warten ....\n")
+					txtInfo.see("end")
 					app.update()
+					dateiDest = pfadZuMedia +"K_"+ mFilename.replace(" ","") + ".mp4"
+					#txtInfo.insert("end",dateiDest)
+					#app.update()
 					dateiSrc = pfadZuMedia + f
 					#print (dateiSrc)
 				else:
@@ -159,9 +170,11 @@ def konvertiereMedien():
 				pass
 	except Exception as e:
 		txtInfo.insert("end","Fehler dursuchen des Verzeichnisses: " + e)
-		fehler = True
-	txtInfo["fg"] = "#ff0000"
-	txtInfo.insert("end","## Konvertierung der Mediendateien erfolgreich beendet ##")
+	fehler = True
+	txtInfo.insert("end","\n\n\n-----------------------------------------------------------------------")
+	txtInfo.insert("end","\n\n## Konvertierung der Mediendateien erfolgreich beendet ##")
+	txtInfo.insert("end","\n\n## Bitte beenden Sie das Programm ueber die Schaltflaeche Ende ##\n\n")
+	txtInfo.see("end")
 def main():	
 	global modus 
 	if len(sys.argv) > 1:
@@ -176,13 +189,18 @@ def main():
 		global app
 		getConfigs()
 		app = tkinter.Tk();
-		btnStartConvert = tkinter.Button(app, text="Start",width=50, command=konvertiereMedien).grid(row=0, column=0,sticky='w')
-		btnExitConvert = tkinter.Button(app, text="Ende",width=50, command=exitApp).grid(row=0, column=0,sticky='e')
-		txtInfo = tkinter.Text(app,bg="#fff",width="105")
-		txtInfo.grid(row=1, column=0,sticky='w')		
-		txtInfo.insert("end", "Um den Konvertierungs zu starten die Schaltflaeche Start druecken \n")
-		
-		
+		app.title("Media Manager")
+		btnStartConvert = tkinter.Button(app, text="Start",width=50, command=konvertiereMedien).grid(row=1, column=0,sticky='w')
+		btnExitConvert = tkinter.Button(app, text="Ende",width=50, command=exitApp).grid(row=1, column=0,sticky='e')
+		txtInfo = tkinter.Text(app,bg="#000",fg="#fff",width="105",font=("Arial", 14))
+		txtInfo.grid(row=0, column=0,sticky='w')		
+		txtInfo.insert("end", "\nDas Programm Media Manager konvertiert die Mediendateien, welche sich in dem  \n")
+		txtInfo.insert("end", "Ordner Propharma befinden. Dies ist noeitg um die Medien dem Kundendisplay\n")
+		txtInfo.insert("end", "im richtigen Format zur Verfuegung zu stellen.\n\n\n")
+		txtInfo.insert("end", "Um den Konvertierungsvorgang zu starten die Schaltflaeche Start druecken \n\n")
+		txtInfo.insert("end", "Die Schaltflaeche Ende beendet dieses Programm\n")
+		# nötig für autoscroll:
+		txtInfo.see("end")
 		#if not fehler:
 		#	renameFiles()
 		#else:
