@@ -74,12 +74,19 @@ def setKassenzeile():
 		#Trennlinie:
 		cv2.line(frame,(200,458),(810,458),(255,255,255),1)
 		cv2.putText(frame,"Zurueck :",(300,490), font, 1,(255,255,255),1)
+		#stringlaenge in pixel ermitteln (cv2.getTextSize(text, font, font_scale, thickness))
+		size = cv2.getTextSize("{:,.2f}".format(float(globals()["total"]))+ "  CHF", font, 1, 1)
+		totalWidth =  size[0][0]
+		size = cv2.getTextSize("{:,.2f}".format(float(globals()["gegeben"]))+ "  CHF", font, 1, 1)
+		gegebenWidth =  size[0][0]
+		size = cv2.getTextSize("{:,.2f}".format(float(globals()["zurueck"]))+ "  CHF", font, 1, 1)
+		zurueckWidth =  size[0][0]
 		#Total:
-		cv2.putText(frame,"{:,.2f}".format(float(globals()["total"]))+ "  CHF",(500,410), font, 1,(255,255,255),1)
+		cv2.putText(frame,"{:,.2f}".format(float(globals()["total"]))+ "  CHF",(750 - totalWidth,410), font, 1,(255,255,255),1)
 		#Gegeben:
-		cv2.putText(frame,"{:,.2f}".format(float(globals()["gegeben"])) + "  CHF ",(500,445), font, 1,(255,255,255),1)		
+		cv2.putText(frame,"{:,.2f}".format(float(globals()["gegeben"])) + "  CHF",(750 - gegebenWidth,445), font, 1,(255,255,255),1)		
 		#Zurueck:
-		cv2.putText(frame,"{:,.2f}".format(float(globals()["zurueck"])) + "  CHF",(500,490), font,1,(0,204,0),1)
+		cv2.putText(frame,"{:,.2f}".format(float(globals()["zurueck"])) + "  CHF",(750 - zurueckWidth,490), font,1,(0,204,0),1)
 	elif globals()["showKassenzeile"] :	
 		font=cv2.FONT_HERSHEY_SIMPLEX
 		print("Kassenzeile ohne Total")
